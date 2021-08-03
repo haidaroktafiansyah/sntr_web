@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use App\Models\pengajar;
+use App\Models\pondok;
 
 class PengajarController extends Controller
 {
@@ -15,10 +18,25 @@ class PengajarController extends Controller
     {
         //
     }
+    public function datapengajar()
+    {
+        $pengajar = DB::table('pengajar')
+            ->join('pondok', 'idpondok', '=', 'pondok_idpondok')
+            ->select('pondok.nama as nama_pondok', 'pengajar.*')
+            ->get();
 
+        return view(
+            'admin.datapengajar',
+            compact(
+                'pengajar'
+            )
+        );
+    }
     public function callform()
     {
-        return view('admin.tambahpengajar');
+        $pondok = pondok::all();
+
+        return view('admin.tambahpengajar', compact('pondok'));
     }
 
     /**
@@ -39,7 +57,26 @@ class PengajarController extends Controller
      */
     public function store(Request $request)
     {
-        dd($request->all());
+        // dump($request->all());
+        $request->validate([
+            'namapengajar' => 'required|max:255',
+            'alamatpengajar' => 'required|max:255',
+            'notelfon' => 'required|Numeric',
+        ]);
+
+        $pengajar = new pengajar();
+
+        $pengajar->nama = $request->namapengajar;
+        $pengajar->alamat = $request->alamatpengajar;
+        $pengajar->no_telp = $request->notelfon;
+        $pengajar->pondok_idpondok = $request->idpondok;
+
+
+        // dd($pengajar->all());
+
+        $pengajar->save();
+
+        return redirect()->route('home');
     }
 
     /**
